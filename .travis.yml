@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t rfashwal/react-test -f ./client/Dockerfile.dev ./client
+
+secript:
+  - docker run rfashwal/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t rfashwal/multi-client ./client
+  - docker build -t rfashwal/multi-nginx ./nginx
+  - docker build -t rfashwal/multi-server ./server
+  - docker build -t rfashwal/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push rfashwal/multi-client
+  - docker push rfashwal/multi-nginx
+  - docker push rfashwal/multi-server
+  - docker push rfashwal/multi-worker
